@@ -66,7 +66,7 @@ class KMedoids():
         new_centroid = self.centroid.astype(np.float32)
         while True:
             # calculate distance between data and centroid
-            dist = KMeans.distance(self)
+            dist = KMedoids.distance(self)
             # find cluster based on minimum distance 
             new_cluster = np.argmin(dist, axis=0).astype(np.int8)
             # looping for find new centroid for each cluster
