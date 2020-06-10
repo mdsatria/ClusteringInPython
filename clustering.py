@@ -52,8 +52,9 @@ class KMedoids():
 
     def __init__(self, x, ncluster):
         self.x = x
-        self.centroid = self.x[np.random.choice(self.x.shape[0], ncluster, replace=False)]
         self.ncluster = ncluster
+        self.centroid = self.x[np.random.choice(self.x.shape[0], self.ncluster, replace=False)]
+        
 
     def distance(self):
         # return euclidean distance between data and centroid
