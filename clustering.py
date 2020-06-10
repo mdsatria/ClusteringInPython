@@ -61,7 +61,7 @@ class KMedoids():
         return np.linalg.norm(self.centroid[:, np.newaxis] - self.x, axis=2)
     
     def clustering(self):
-        # create first cluster. we don't care about the size and value, since it's only for checking first iteration
+        # create first cluster. we don't care about the size and value, since it's only for checking first iteration.
         cluster = np.array([-1]).astype(np.int8)
         # create centroid from user input and change data type
         new_centroid = self.centroid.astype(np.float32)
