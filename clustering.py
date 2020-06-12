@@ -12,36 +12,51 @@ class KMeans():
         ncluster : number of cluster
     """
 
-    def __init__(self, x, centroid, ncluster):
+    def __init__(self, x, centroid, ncluster, verbose=0, max_iter=1000):
         self.x = x
         self.centroid = centroid
         self.ncluster = ncluster
+        self.verbose = verbose
+        self.max_iter = max_iter
 
-    def distance(self):
+    def distance(self, new_centroid):
         # return euclidean distance between data and centroid
-        return np.linalg.norm(self.centroid[:, np.newaxis] - self.x, axis=2)
+        return np.linalg.norm(new_centroid[:, np.newaxis] - self.x, axis=2)
     
     def clustering(self):
         # create first cluster. we don't care about the size and value, since it's only for checking first iteration
         cluster = np.array([-1]).astype(np.int8)
         # create centroid from user input and change data type
         new_centroid = self.centroid.astype(np.float32)
+        n_iter = 1
         while True:
             # calculate distance between data and centroid
-            dist = KMeans.distance(self)
+            dist = KMeans.distance(self, new_centroid)
+            if (self.verbose==1):
+                print('Iteration : {}'.format(n_iter))
+                print('   Distance :' )
+                print(dist.T)
             # find cluster based on minimum distance 
             new_cluster = np.argmin(dist, axis=0).astype(np.int8)
+            if (self.verbose==1):
+                print('   Cluster :' )
+                print(new_cluster)
             # looping for find new centroid for each cluster
             for i in range (self.ncluster):
                 # find centroid for i-th cluster
                 new_centroid[i,:] = np.expand_dims(np.mean(self.x[np.argwhere(new_cluster==i).reshape(-1),:], axis=0), axis=0)
+            if (self.verbose==1):
+                print('   Centroid :' )
+                print(new_centroid,'\n')
             # break the loop if new cluster same as previous cluster
-            if (np.array_equal(new_cluster,cluster)==True):
+            if (np.array_equal(new_cluster,cluster)==True) or (n_iter>self.max_iter):
                 break
             else:
                 cluster = new_cluster
+                n_iter += 1
 
         return new_cluster, new_centroid
+
 
 class KMedoids():
     """ Implementation of KMedoids algorithm
@@ -50,34 +65,57 @@ class KMedoids():
         ncluster : number of cluster
     """
 
-    def __init__(self, x, ncluster):
+    def __init__(self, x, ncluster, verbose=0, max_iter=1000):
         self.x = x
         self.ncluster = ncluster
-        self.centroid = self.x[np.random.choice(self.x.shape[0], self.ncluster, replace=False)]
-        
+        self.medoid = self.x[np.random.choice(self.x.shape[0], self.ncluster, replace=False)]        
+        self.verbose = verbose
+        self.max_iter = max_iter
 
-    def distance(self):
+    def distance(self, new_medoid):
         # return euclidean distance between data and centroid
-        return np.linalg.norm(self.centroid[:, np.newaxis] - self.x, axis=2)
+        return np.linalg.norm(new_medoid[:, np.newaxis] - self.x, axis=2)
     
     def clustering(self):
-        # create first cluster. we don't care about the size and value, since it's only for checking first iteration.
+        # create first cluster. we don't care about the size and value, since it's only for checking first iteration
         cluster = np.array([-1]).astype(np.int8)
         # create centroid from user input and change data type
-        new_centroid = self.centroid.astype(np.float32)
+        new_medoid = self.medoid.astype(np.float32)
+        n_iter = 1
         while True:
             # calculate distance between data and centroid
-            dist = KMedoids.distance(self)
+            dist = KMeans.distance(self, new_medoid)
+            if (self.verbose==1):
+                print('Iteration : {}'.format(n_iter))
+                print('   Distance :' )
+                print(dist.T)
             # find cluster based on minimum distance 
             new_cluster = np.argmin(dist, axis=0).astype(np.int8)
+            if (self.verbose==1):
+                print('   Cluster :' )
+                print(new_cluster)
             # looping for find new centroid for each cluster
             for i in range (self.ncluster):
                 # find centroid for i-th cluster
-                new_centroid[i,:] = np.expand_dims(np.mean(self.x[np.argwhere(new_cluster==i).reshape(-1),:], axis=0), axis=0)
+                new_medoid[i,:] = np.expand_dims(np.mean(self.x[np.argwhere(new_cluster==i).reshape(-1),:], axis=0), axis=0)
+            if (self.verbose==1):
+                print('   Medoid :' )
+                print(new_medoid,'\n')
             # break the loop if new cluster same as previous cluster
-            if (np.array_equal(new_cluster,cluster)==True):
+            if (np.array_equal(new_cluster,cluster)==True) or (n_iter>self.max_iter):
                 break
             else:
                 cluster = new_cluster
+                n_iter += 1
 
-        return new_cluster, new_centroid
+        return new_cluster, new_medoid
+
+"""
+data test
+dt = np.array([[1,2],[2,3],[4,3],[5,4]])
+ncl = 2
+centroid = np.array([[1,0],[4,4]])
+
+l,k=KMeans(dt, centroid, ncl, verbose=1).clustering()
+l,k=KMedoids(dt, 2, verbose=1).clustering()
+"""
