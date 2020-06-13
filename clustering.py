@@ -10,18 +10,26 @@ class KMeans():
         x : 2d numpy array. row is number of data, column is number of features
         centroid : 2d numpy array. row is number of centroid, column is number of features
         ncluster : number of cluster
+        metric : algorithm to calculate distance 'euclidean' or 'manhattan'
+        verbose : log the clustering process. 0 to turn on log, 1 to turn off log
+        max_iter : maximum iteration of clustering process
     """
 
-    def __init__(self, x, centroid, ncluster, verbose=0, max_iter=1000):
+    def __init__(self, x, centroid, ncluster, metric='euclidean', verbose=0, max_iter=1000):
         self.x = x
         self.centroid = centroid
         self.ncluster = ncluster
+        self.metric = metric
         self.verbose = verbose
         self.max_iter = max_iter
 
     def distance(self, new_centroid):
         # return euclidean distance between data and centroid
-        return np.linalg.norm(new_centroid[:, np.newaxis] - self.x, axis=2)
+        if (self.metric=='euclidean'):
+            dist = np.linalg.norm(new_centroid[:, np.newaxis] - self.x, axis=2)
+        elif (self.metric=='manhattan'):
+            dist = (np.abs(self.x[:,0,None] - new_centroid[:,0]) + np.abs(self.x[:,1,None] - new_centroid[:,1])).T
+        return dist 
     
     def clustering(self):
         # create first cluster. we don't care about the size and value, since it's only for checking first iteration
@@ -62,19 +70,28 @@ class KMedoids():
     """ Implementation of KMedoids algorithm
     '''Params
         x : 2d numpy array. row is number of data, column is number of features
+        medoid : 2d numpy array. row is number of medoid, column is number of features
         ncluster : number of cluster
+        metric : algorithm to calculate distance 'euclidean' or 'manhattan'
+        verbose : log the clustering process. 0 to turn on log, 1 to turn off log
+        max_iter : maximum iteration of clustering process
     """
 
-    def __init__(self, x, ncluster, verbose=0, max_iter=1000):
+    def __init__(self, x, ncluster,  metric='euclidean', verbose=0, max_iter=1000):
         self.x = x
         self.ncluster = ncluster
+        self.metric = metric
         self.medoid = self.x[np.random.choice(self.x.shape[0], self.ncluster, replace=False)]        
         self.verbose = verbose
         self.max_iter = max_iter
 
     def distance(self, new_medoid):
         # return euclidean distance between data and centroid
-        return np.linalg.norm(new_medoid[:, np.newaxis] - self.x, axis=2)
+        if (self.metric=='euclidean'):
+            dist = np.linalg.norm(new_medoid[:, np.newaxis] - self.x, axis=2)
+        elif (self.metric=='manhattan'):
+            dist = (np.abs(self.x[:,0,None] - new_medoid[:,0]) + np.abs(self.x[:,1,None] - new_medoid[:,1])).T
+        return dist 
     
     def clustering(self):
         # create first cluster. we don't care about the size and value, since it's only for checking first iteration
@@ -112,10 +129,11 @@ class KMedoids():
 
 """
 data test
+
 dt = np.array([[1,2],[2,3],[4,3],[5,4]])
 ncl = 2
 centroid = np.array([[1,0],[4,4]])
 
-l,k=KMeans(dt, centroid, ncl, verbose=1).clustering()
-l,k=KMedoids(dt, 2, verbose=1).clustering()
+l,k = KMeans(dt, centroid, ncl, metric='manhattan', verbose=1).clustering()
+l,k = KMedoids(dt, ncl, verbose=1).clustering()
 """
