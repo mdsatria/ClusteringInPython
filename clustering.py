@@ -52,7 +52,12 @@ class KMeans():
             # looping for find new centroid for each cluster
             for i in range (self.ncluster):
                 # find centroid for i-th cluster
-                new_centroid[i,:] = np.expand_dims(np.mean(self.x[np.argwhere(new_cluster==i).reshape(-1),:], axis=0), axis=0)
+                # if there is no data point in i-th cluster, we assign centroid as before
+                if ((self.x[np.argwhere(new_cluster==i).reshape(-1),:]).size==0):
+                    new_centroid[i,:] = new_centroid[i,:]
+                else:
+                # if there is data point in i-th cluster, we calculate new centroid
+                    new_centroid[i,:] = np.expand_dims(np.mean(self.x[np.argwhere(new_cluster==i).reshape(-1),:], axis=0), axis=0)
             if (self.verbose==1):
                 print('   Centroid :' )
                 print(new_centroid,'\n')
@@ -60,7 +65,9 @@ class KMeans():
             if (np.array_equal(new_cluster,cluster)==True) or (n_iter>self.max_iter):
                 break
             else:
+                # assign new cluster to old cluster
                 cluster = new_cluster
+                # counter for iteration
                 n_iter += 1
 
         return new_cluster, new_centroid
@@ -77,7 +84,7 @@ class KMedoids():
         max_iter : maximum iteration of clustering process
     """
 
-    def __init__(self, x, ncluster,  metric='euclidean', verbose=0, max_iter=1000):
+    def __init__(self, x, ncluster, metric='euclidean', verbose=0, max_iter=1000):
         self.x = x
         self.ncluster = ncluster
         self.metric = metric
@@ -99,9 +106,10 @@ class KMedoids():
         # create centroid from user input and change data type
         new_medoid = self.medoid.astype(np.float32)
         n_iter = 1
+        cost = np.inf
         while True:
             # calculate distance between data and centroid
-            dist = KMeans.distance(self, new_medoid)
+            dist = KMedoids.distance(self, new_medoid)
             if (self.verbose==1):
                 print('Iteration : {}'.format(n_iter))
                 print('   Distance :' )
@@ -111,13 +119,23 @@ class KMedoids():
             if (self.verbose==1):
                 print('   Cluster :' )
                 print(new_cluster)
+            # calculate new cost
+            new_cost = np.min(dist, axis=0).sum()
+            # find new medoid
+            dt_temp = np.delete(self.x, new_cluster, axis=0)
             # looping for find new centroid for each cluster
             for i in range (self.ncluster):
                 # find centroid for i-th cluster
-                new_medoid[i,:] = np.expand_dims(np.mean(self.x[np.argwhere(new_cluster==i).reshape(-1),:], axis=0), axis=0)
-            if (self.verbose==1):
-                print('   Medoid :' )
-                print(new_medoid,'\n')
+                # if there is no data point in i-th cluster, we assign centroid as before
+                if ((self.x[np.argwhere(new_cluster==i).reshape(-1),:]).size==0):
+                    new_medoid[i,:] = new_medoid[i,:]
+                else:
+                # if there is data point in i-th cluster, we calculate new centroid
+                    new_medoid[i,:] = dt_temp[np.argwhere(new_cluster==i).reshape(-1),:]
+                    temp_dist = KMedoids.distance(self,new_medoid)
+                    new_cluster = np.argmin(dist, axis=0).astype(np.int8)
+                    new_cost = np.min(dist, axis=0).sum()
+
             # break the loop if new cluster same as previous cluster
             if (np.array_equal(new_cluster,cluster)==True) or (n_iter>self.max_iter):
                 break
@@ -130,10 +148,10 @@ class KMedoids():
 """
 data test
 
-dt = np.array([[1,2],[2,3],[4,3],[5,4]])
+dt = np.array([[1,2,3],[5,2,3],[4,2,3],[5,1,4]])
 ncl = 2
-centroid = np.array([[1,0],[4,4]])
+centroid = np.array([[1,0,0],[4,1,4]])
 
-l,k = KMeans(dt, centroid, ncl, metric='manhattan', verbose=1).clustering()
+l,k = KMeans(dt, centroid, ncl, verbose=1, max_iter=10).clustering()
 l,k = KMedoids(dt, ncl, verbose=1).clustering()
 """
