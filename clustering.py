@@ -151,10 +151,11 @@ class KMedoids():
 
 """
 data test
-"""
+
 dt = np.array([[1,2],[2,3],[4,3],[5,4]])
 ncl = 2
 centroid = np.array([[1,0],[4,4]])
 
 l,k = KMeans(dt, centroid, ncl, verbose=1).clustering()
 l,k = KMedoids(dt, ncl, verbose=1).clustering()
+"""
